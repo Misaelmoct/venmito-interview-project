@@ -1,6 +1,5 @@
 # Venmito Data Engineering Project
 
-
 ## Approach
 
 #### Data Ingestion, Matching and Conforming
@@ -27,3 +26,69 @@ The process of matching the transactions data only included assigning the person
 
 
 The data that was loaded was subsequently uploaded to a cloud-hosted MySQL database. This decision was made in order to utilize the SQL language at a later stage.
+
+
+
+
+
+
+## How to run
+
+The project was built using micro-framework Python Flask and a relational database using MySQL hosted on Azure Cloud Services. I recomend to create a virtual environment first and installing the needed python modules inside the environment. 
+
+##### 1. Setting the virtual environment
+
+First you must install python's virtualenv module. The command to install it is:
+
+> pip install virtualenv
+
+Now create the virtual environment with the following command:
+
+> python -m venv .venv
+
+The previous command will create a folder in the root project folder called '.venv'
+To activate the environment in Mac and Linux run the command:
+
+> source .venv/bin/activate
+
+##### 2. Installing the required modules and running the application
+Once the environment is activated install the required modules by using the following command:
+
+> pip install -r requirements.txt
+
+At this point the project should be ready to run. As mentioned before the database is being hosted on Azure Cloud Services and all the processed data is already in the database. Nevertheless you can reset the database and store the data by running the following command:
+
+> python app.py --setup-database=True
+
+This command will delete all the existing tables in the database if any, create new tables and load the data to the corresponding tables. If you dont which to setup the database run the command without the value or run instead the command:
+
+> flask run
+
+##### 3. Accessing the data and insights through API Calls
+
+To access the data insights use the following table below 'API Calls Table' to refer to the desired routes. In your prefered browser insert the host followed by the port number specified by the flask application and the route. Your url should look similar to the following:
+
+> http://127.0.0.1:5000/stores/most-profitable
+
+In the previous url the host is 'http://127.0.0.1' and the port is '5000'.
+
+##### API Calls Table
+
+*Optional parameter.
+
+|  Route   | Method | Query Params  |   Body Values  |  Description  |
+| --- | --- | --- | --- | --- |
+|  /stores/most-profitable                    | GET |                                |  | Returns the store most profitable per year. |
+|  /stores/sellings/year                      | GET | store_id*                      |  | Returns profits per year for all stores. Results can be filtered by store using the store_id param.|
+|  /stores/sellings/item                      | GET | store_id*                      |  | Returns each items quantity sells for all stores. Results can be filtered by store using the store_id param.|
+|  /promotions                                | GET | promotion*, group_by_person*   |  | Returns all the promotions stored in the database. Results can be grouped by person if the optional query params are provided. |
+|  /promotions/best-performing                | GET |                                |  | Returns the top 5 best performing promotions. |
+| /promotions/worst-performing                | GET |                                |  | Returns the top 5 worst performing promotions. |
+| /persons/promotions/<int:person_id>         | GET |                                |  | Returns all the promotions for a given person. |
+| /persons/shopping-history/<int:person_id>   | GET |                                |  | Returns shopping history for a given person. |
+| /items/top-sellers                          | GET |                                |  | Returns the top 5 selling items. |
+| /transfers                                  | GET |                                |  | Returns all the transfers stored in the database. |
+|  | |  |   | |
+|  |  |  |   | | 
+|  |  |  |    | |
+

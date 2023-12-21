@@ -1,8 +1,9 @@
 import mysql.connector
 from mysql.connector import errorcode
-from data_processor import DataProcessor as DP
+from tools.data_processor import DataProcessor as DP
 from threading import Thread
 import logging
+from flask import g
 
 logging.basicConfig(format="%(name)s : %(levelname)s : %(message)s")
 logger = logging.getLogger("Database-Manager")
@@ -27,6 +28,16 @@ def connect_db():
          print(err)
    else:
       return conn
+   
+
+# Creating database connection
+def get_db_conn():
+   if 'db' not in g:
+      g.db = connect_db()
+
+   return g.db
+   
+
    
 
 class DatabaseManager():
@@ -139,7 +150,7 @@ class DatabaseManager():
 
 
 
-        with open('create_tables.sql', 'r') as queries:
+        with open('tools/create_tables.sql', 'r') as queries:
             percentage_completion = 20
             cur_iter = cursor.execute(queries.read(), multi=True)
             for r in cur_iter:
