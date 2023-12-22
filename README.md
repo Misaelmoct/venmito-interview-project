@@ -45,7 +45,7 @@ For the data analysis I focused on insights in the following entities:
 - Top 5 best performing promotions.
 - Top 5 worst performing promotions.
 
-###### III. Persons
+###### III. Persons Insights:
 - Promotions of a given person.
 - Promotions sugestions based on persons and potential friends shopping activity.
 - Shopping history of a given person.
@@ -54,7 +54,7 @@ For the data analysis I focused on insights in the following entities:
 - Top 10 money senders by transfers.
 - Potential friends of a given person.
 
-###### IV. Items
+###### IV. Items Insights:
 - Top 5 selling items.
 
 
