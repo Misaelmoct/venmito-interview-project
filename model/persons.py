@@ -67,26 +67,6 @@ class PersonsDAO():
         cursor.close()
         return results
     
-    def get_all_tranfers(self):
-        conn = get_db_conn()
-        cursor = conn.cursor(dictionary=True)
-        query = """
-        WITH sender_info AS (SELECT p.person_id, first_name, last_name, amount, transfer_id, transfer_date
-                            FROM persons p INNER JOIN transfers t ON p.person_id = t.sender_id),
-
-            recipient_info AS (SELECT p.person_id, first_name, last_name, amount, transfer_id
-                            FROM persons p INNER JOIN transfers t ON p.person_id = t.recipient_id)
-
-        SELECT s.transfer_id, s.first_name AS sender_first_name, s.last_name AS sender_last_name,
-            r.first_name AS recipient_first_name, r.last_name AS recipient_last_name, s.amount, transfer_date
-        FROM sender_info s INNER JOIN recipient_info r ON s.transfer_id = r.transfer_id
-        ORDER BY transfer_date
-        """
-
-        cursor.execute(query)
-        results = cursor.fetchall()
-        cursor.close()
-        return results
     
     def get_promotions_count(self):
         """
@@ -123,7 +103,7 @@ class PersonsDAO():
         cursor = conn.cursor(dictionary=True)
         query = """
         WITH shopping_history AS (SELECT t.person_id,
-                                 json_arrayagg(json_object('item', item, 'transactio_date', transaction_date, 'store', store_name)) AS shopping_history
+                                 json_arrayagg(json_object('item', item, 'transaction_date', transaction_date, 'store', store_name)) AS shopping_history
                           FROM transactions t INNER JOIN stores s ON s.store_id = t.store_id
                           WHERE person_id = %s
                           GROUP BY t.person_id)
@@ -138,5 +118,202 @@ class PersonsDAO():
         cursor.execute(query, (p_id, p_id))
         results = cursor.fetchone()
         results['shopping_history'] = json.loads(results['shopping_history'])
+        cursor.close()
+        return results
+    
+
+    def get_all_transfers(self):
+        conn = get_db_conn()
+        cursor = conn.cursor(dictionary=True)
+        query = """
+        WITH senders_transfers AS (SELECT transfer_id, sender_id AS person_id, first_name, last_name, amount, transfer_date
+                                FROM persons p INNER JOIN transfers t ON p.person_id = t.sender_id),
+            recipients_transfers AS (SELECT transfer_id, recipient_id AS person_id, first_name, last_name, amount, transfer_date
+                                    FROM persons p INNER JOIN transfers t ON p.person_id = t.recipient_id)
+
+
+        SELECT s.transfer_id,
+            JSON_OBJECT('first_name', s.first_name, 'last_name', s.last_name, 'person_id', s.person_id) AS sender,
+            JSON_OBJECT('first_name', r.first_name, 'last_name', r.last_name, 'person_id', r.person_id) AS recipient,
+            s.amount,
+            s.transfer_date
+        FROM senders_transfers s INNER JOIN recipients_transfers r ON s.transfer_id = r.transfer_id
+        """
+
+        cursor.execute(query)
+        results = cursor.fetchall()
+        for i in range(len(results)):
+            results[i]['sender'] = json.loads(results[i]['sender'])
+            results[i]['recipient'] = json.loads(results[i]['recipient'])
+        
+        cursor.close()
+        return results
+    
+    def get_transfer_by_sender(self, sender_id):
+        conn = get_db_conn()
+        cursor = conn.cursor(dictionary=True)
+        query = """
+        WITH senders_transfers AS (SELECT transfer_id, sender_id AS person_id, first_name, last_name, amount, transfer_date
+                                FROM persons p INNER JOIN transfers t ON p.person_id = t.sender_id),
+            recipients_transfers AS (SELECT transfer_id, recipient_id AS person_id, first_name, last_name, amount, transfer_date
+                                    FROM persons p INNER JOIN transfers t ON p.person_id = t.recipient_id)
+
+
+        SELECT s.transfer_id,
+            JSON_OBJECT('first_name', s.first_name, 'last_name', s.last_name, 'person_id', s.person_id) AS sender,
+            JSON_OBJECT('first_name', r.first_name, 'last_name', r.last_name, 'person_id', r.person_id) AS recipient,
+            s.amount,
+            s.transfer_date
+        FROM senders_transfers s INNER JOIN recipients_transfers r ON s.transfer_id = r.transfer_id
+        WHERE s.person_id = %s
+        """
+
+        cursor.execute(query, (sender_id,))
+        results = cursor.fetchall()
+        for i in range(len(results)):
+            results[i]['sender'] = json.loads(results[i]['sender'])
+            results[i]['recipient'] = json.loads(results[i]['recipient'])
+        cursor.close()
+        return results
+    
+    def get_transfer_by_receiver(self, receiver_id):
+        conn = get_db_conn()
+        cursor = conn.cursor(dictionary=True)
+        query = """
+        WITH senders_transfers AS (SELECT transfer_id, sender_id AS person_id, first_name, last_name, amount, transfer_date
+                                FROM persons p INNER JOIN transfers t ON p.person_id = t.sender_id),
+            recipients_transfers AS (SELECT transfer_id, recipient_id AS person_id, first_name, last_name, amount, transfer_date
+                                    FROM persons p INNER JOIN transfers t ON p.person_id = t.recipient_id)
+
+
+        SELECT s.transfer_id,
+            JSON_OBJECT('first_name', s.first_name, 'last_name', s.last_name, 'person_id', s.person_id) AS sender,
+            JSON_OBJECT('first_name', r.first_name, 'last_name', r.last_name, 'person_id', r.person_id) AS recipient,
+            s.amount,
+            s.transfer_date
+        FROM senders_transfers s INNER JOIN recipients_transfers r ON s.transfer_id = r.transfer_id
+        WHERE r.person_id = %s
+        """
+
+        cursor.execute(query, (receiver_id,))
+        results = cursor.fetchall()
+        for i in range(len(results)):
+            results[i]['sender'] = json.loads(results[i]['sender'])
+            results[i]['recipient'] = json.loads(results[i]['recipient'])
+        cursor.close()
+        return results
+    
+    def get_all_transfers_by_person(self, p_id):
+        conn = get_db_conn()
+        cursor = conn.cursor(dictionary=True)
+        query = """
+        WITH senders_transfers AS (SELECT transfer_id, sender_id AS person_id, first_name, last_name, amount, transfer_date
+                                FROM persons p INNER JOIN transfers t ON p.person_id = t.sender_id),
+            recipients_transfers AS (SELECT transfer_id, recipient_id AS person_id, first_name, last_name, amount, transfer_date
+                                    FROM persons p INNER JOIN transfers t ON p.person_id = t.recipient_id)
+
+
+        SELECT s.transfer_id,
+            JSON_OBJECT('first_name', s.first_name, 'last_name', s.last_name, 'person_id', s.person_id) AS sender,
+            JSON_OBJECT('first_name', r.first_name, 'last_name', r.last_name, 'person_id', r.person_id) AS recipient,
+            s.amount,
+            s.transfer_date
+        FROM senders_transfers s INNER JOIN recipients_transfers r ON s.transfer_id = r.transfer_id
+        WHERE r.person_id = %s OR s.person_id = %s
+        """
+
+        cursor.execute(query, (p_id, p_id))
+        results = cursor.fetchall()
+        for i in range(len(results)):
+            results[i]['sender'] = json.loads(results[i]['sender'])
+            results[i]['recipient'] = json.loads(results[i]['recipient'])
+        cursor.close()
+        return results
+    
+    def get_top_ten_money_receivers(self):
+        """
+        Returns the top 10 persons that had received the highest total amount of
+        money from transfers.
+        """
+
+        conn = get_db_conn()
+        cursor = conn.cursor(dictionary=True)
+        query = """
+        SELECT p.person_id, first_name, last_name, SUM(amount) AS total
+        FROM persons p INNER JOIN transfers t on p.person_id = t.recipient_id
+        GROUP BY p.person_id
+        ORDER BY SUM(amount) DESC
+        LIMIT 10;
+        """
+
+        cursor.execute(query)
+        results = cursor.fetchall()
+        cursor.close()
+        return results
+    
+    def get_top_ten_money_senders(self):
+        """
+        Returns the top 10 persons that have sent the highest total amount of
+        money from transfers.
+        """
+
+        conn = get_db_conn()
+        cursor = conn.cursor(dictionary=True)
+        query = """
+        SELECT p.person_id, first_name, last_name, SUM(amount) AS total
+        FROM persons p INNER JOIN transfers t on p.person_id = t.sender_id
+        GROUP BY p.person_id
+        ORDER BY SUM(amount) DESC
+        LIMIT 10;
+        """
+
+        cursor.execute(query)
+        results = cursor.fetchall()
+        cursor.close()
+        return results
+
+
+    def get_potential_friends(self, p_id):
+        """
+        This method return a list of potential friends of a given person. The data from transfers
+        is used to infer which persons could be potential friends.
+        """
+
+        conn = get_db_conn()
+        cursor = conn.cursor(dictionary=True)
+        query = """
+        WITH friends_list AS (SELECT person_id, first_name, last_name
+                            FROM persons p INNER JOIN transfers t ON p.person_id = t.recipient_id
+                            WHERE sender_id = %s
+                            UNION
+                            SELECT person_id, first_name, last_name
+                            FROM persons p INNER JOIN transfers t ON p.person_id = t.sender_id
+                            WHERE recipient_id = %s)
+
+        SELECT p.person_id, p.first_name, p.last_name,
+            JSON_ARRAYAGG(JSON_OBJECT('person_id', fl.person_id, 'first_name', fl.first_name, 'last_name', fl.last_name)) AS friends
+        FROM persons p CROSS JOIN friends_list fl
+        WHERE p.person_id = %s
+        GROUP BY p.person_id;
+        """
+
+        cursor.execute(query, (p_id, p_id, p_id))
+        results = cursor.fetchone()
+        if results:
+            results['friends'] = json.loads(results['friends'])
+        cursor.close()
+        return results
+        
+    def get_promotion_info(self, promotion_id):
+        conn = get_db_conn()
+        cursor = conn.cursor(dictionary=True)
+        query = """
+        SELECT promotion_id, person_id, promotion, responded
+        FROM promotions WHERE promotion_id = %s
+        AND responded = 0
+        """
+
+        cursor.execute(query, (promotion_id,))
+        results = cursor.fetchone()
         cursor.close()
         return results

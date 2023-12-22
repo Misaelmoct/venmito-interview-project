@@ -80,6 +80,15 @@ def get_person_promotions(person_id):
    else:
       return jsonify("Method not allowed"), 405
    
+@app.route("/persons/promotions/sugestion/<int:promotion_id>", methods=['GET'])
+def get_sugestion(promotion_id):
+   if request.method == 'GET':
+      return Persons().get_promotion_sugestion(promotion_id)
+   
+   else:
+      return jsonify("Method not allowed"), 405
+
+
 @app.route("/persons/shopping-history/<int:person_id>", methods=['GET'])
 def get_shopping_history(person_id):
    if request.method == 'GET':
@@ -87,7 +96,42 @@ def get_shopping_history(person_id):
    
    else:
       return jsonify("Method not allowed"), 405
+
+
+@app.route("/persons/transfers", methods=['GET'])
+def get_all_transfers():
+   if request.method == 'GET':
+      return Persons().get_transfers(request.args)
    
+   else:
+      return jsonify("Method not allowed"), 405
+
+
+@app.route("/persons/transfers/top-money-receivers", methods=['GET'])
+def get_money_receivers():
+   if request.method == 'GET':
+      return Persons().get_top_ten_money_receivers()
+   
+   else:
+      return jsonify("Method not allowed"), 405
+   
+
+@app.route("/persons/transfers/top-money-senders", methods=['GET'])
+def get_money_senders():
+   if request.method == 'GET':
+      return Persons().get_top_ten_money_senders()
+   
+   else:
+      return jsonify("Method not allowed"), 405
+
+@app.route("/persons/potential-friends/<int:person_id>", methods=['GET'])
+def get_potential_friends(person_id):
+   if request.method == 'GET':
+      return Persons().get_potential_friends_by_person(person_id)
+   
+   else:
+      return jsonify("Method not allowed"), 405
+
 @app.route("/items/top-sellers", methods=['GET'])
 def get_top_selling_items():
    if request.method == 'GET':
@@ -96,13 +140,8 @@ def get_top_selling_items():
    else:
       return jsonify("Method not allowed"), 405
    
-@app.route("/transfers", methods=['GET'])
-def get_all_transfers():
-   if request.method == 'GET':
-      return Persons().get_all_transfers()
-   
-   else:
-      return jsonify("Method not allowed"), 405
+
+
 
 
 
