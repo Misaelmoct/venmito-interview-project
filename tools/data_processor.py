@@ -48,12 +48,12 @@ class DataProcessor():
         # Clean yaml data
         city_column = self.people_yaml_df.pop('city')
         name_column = self.people_yaml_df.pop('name')
-        self.people_yaml_df[['city', 'country']] = city_column.str.split(", ", expand=True)
-        self.people_yaml_df[['firstName', 'surname']] = name_column.str.split(" ", expand=True)
-        self.people_yaml_df.rename(columns= {'phone' : 'telephone'}, inplace=True)
+        self.people_yaml_df[['city', 'country']] = city_column.str.split(", ", expand=True) # Split city column into city and country columns
+        self.people_yaml_df[['firstName', 'surname']] = name_column.str.split(" ", expand=True) # Split name column into firstName and surname columns
+        self.people_yaml_df.rename(columns= {'phone' : 'telephone'}, inplace=True) # Change phone columns name to telephone
 
         # Clean json people data
-        self.people_json_df['id'] = pd.to_numeric(self.people_json_df['id'])
+        self.people_json_df['id'] = pd.to_numeric(self.people_json_df['id']) # Change id column values type to int
 
         # Get the union of the two dataframes
         self.people_df = pd.concat([self.people_json_df, self.people_yaml_df], ignore_index=True)
@@ -65,7 +65,7 @@ class DataProcessor():
 
         """
         This method loads the promotions data as a pandas dataframe, assign the 
-        person id associated with each record and remove the clien_email and 
+        person id associated with each record and remove the client_email and 
         telephone columns.
         """
 
@@ -88,7 +88,7 @@ class DataProcessor():
                 result = self.people_df[self.people_df['telephone'] == phone_num]
                 ids.append(result['id'].values[0])
 
-        self.promotions_df['responded'] = self.promotions_df['responded'].map({'Yes': 1, 'No': 0})
+        self.promotions_df['responded'] = self.promotions_df['responded'].map({'Yes': 1, 'No': 0}) # Turn string values into 1's and 0's
             
         self.promotions_df['id'] = ids # assign the person id related to each record
         self.promotions_df.drop(['client_email', 'telephone'], inplace=True, axis=1) # drop columns not needed anymore
